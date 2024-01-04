@@ -102,7 +102,7 @@ abstract class BaseAudioPlayer internal constructor(
         private set(value) {
             if (value != field) {
                 // Log the value
-                Timber.d("TEST4 - Player state changed to $value")
+                Timber.d("TEST5 - Player state changed to $value")
                 field = value
                 playerEventHolder.updateAudioPlayerState(value)
                 if (!playerConfig.handleAudioFocus) {
