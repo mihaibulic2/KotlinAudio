@@ -101,16 +101,18 @@ abstract class BaseAudioPlayer internal constructor(
     var playerState: AudioPlayerState = AudioPlayerState.IDLE
         private set(value) {
             if (value != field) {
+                // Log the value
+                Timber.d("Player state changed to $value")
                 field = value
-                playerEventHolder.updateAudioPlayerState(value)
-                if (!playerConfig.handleAudioFocus) {
-                    when (value) {
-                        AudioPlayerState.IDLE,
-                        AudioPlayerState.ERROR -> abandonAudioFocusIfHeld()
-//                        AudioPlayerState.READY -> requestAudioFocus()
-                        else -> {}
-                    }
-                }
+                // playerEventHolder.updateAudioPlayerState(value)
+                // if (!playerConfig.handleAudioFocus) {
+                    // when (value) {
+                        // AudioPlayerState.IDLE,
+                        // AudioPlayerState.ERROR -> abandonAudioFocusIfHeld()
+                        // AudioPlayerState.READY -> requestAudioFocus()
+                        // else -> {}
+                    // }
+                // }
             }
         }
 
