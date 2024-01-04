@@ -16,7 +16,7 @@ Choose "kotlin-audio-example" in the run target and run it in a simulator
 (or on an actual device).
 
 ## Requirements
-minSDK 21
+minSDK 24
 
 ## Installation
 
