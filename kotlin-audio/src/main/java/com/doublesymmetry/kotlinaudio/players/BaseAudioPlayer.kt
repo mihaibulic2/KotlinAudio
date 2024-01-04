@@ -78,6 +78,13 @@ import timber.log.Timber
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
+// NOTE on Paced Breathing changes: we ignore audiofocus entirely
+// - requestAudioFocus(), abandonAudioFocus(), onAudioFocusChange() do nothing
+// - we tell exoPlayer NOT to handle audio focus
+// - NOTE: before handleAudioFocus determined if exoPlayer handles audioFocus or if BaseAudioPlayer does,
+//   ie it's still handled by someone. Ideally this would have a 3rd state for "ignore focus entirely"
+//   but it's just easier for us to always do that.
+
 abstract class BaseAudioPlayer internal constructor(
     internal val context: Context,
     playerConfig: PlayerConfig,
@@ -101,18 +108,16 @@ abstract class BaseAudioPlayer internal constructor(
     var playerState: AudioPlayerState = AudioPlayerState.IDLE
         private set(value) {
             if (value != field) {
-                // Log the value
-                Timber.d("TEST5 - Player state changed to $value")
                 field = value
                 playerEventHolder.updateAudioPlayerState(value)
-                // if (!playerConfig.handleAudioFocus) {
-                //     when (value) {
-                //         AudioPlayerState.IDLE,
-                //         AudioPlayerState.ERROR -> abandonAudioFocusIfHeld()
-                //         AudioPlayerState.READY -> requestAudioFocus()
-                //         else -> {}
-                //     }
-                // }
+                if (!playerConfig.handleAudioFocus) {
+                    when (value) {
+                        AudioPlayerState.IDLE,
+                        AudioPlayerState.ERROR -> abandonAudioFocusIfHeld()
+                        AudioPlayerState.READY -> requestAudioFocus()
+                        else -> {}
+                    }
+                }
             }
         }
 
@@ -258,6 +263,7 @@ abstract class BaseAudioPlayer internal constructor(
                     }
                 )
                 .build();
+            // PACED BREATHING CHANGE (exoPlayer doesn't handle audioFocus)!
             exoPlayer.setAudioAttributes(audioAttributes, false) //playerConfig.handleAudioFocus);
             mediaSessionConnector.setPlayer(playerToUse)
             mediaSessionConnector.setMediaMetadataProvider {
@@ -525,69 +531,78 @@ abstract class BaseAudioPlayer internal constructor(
     }
 
     private fun requestAudioFocus() {
-        // if (hasAudioFocus) return
-        // Timber.d("Requesting audio focus...")
+        // PACED BREATHING CHANGE (this is a no-op)!
+        return;
 
-        // val manager = ContextCompat.getSystemService(context, AudioManager::class.java)
+        if (hasAudioFocus) return
+        Timber.d("Requesting audio focus...")
 
-        // focus = AudioFocusRequestCompat.Builder(AUDIOFOCUS_GAIN)
-        //     .setOnAudioFocusChangeListener(this)
-        //     .setAudioAttributes(
-        //         AudioAttributesCompat.Builder()
-        //             .setUsage(USAGE_MEDIA)
-        //             .setContentType(CONTENT_TYPE_MUSIC)
-        //             .build()
-        //     )
-        //     .setWillPauseWhenDucked(playerOptions.alwaysPauseOnInterruption)
-        //     .build()
+        val manager = ContextCompat.getSystemService(context, AudioManager::class.java)
 
-        // val result: Int = if (manager != null && focus != null) {
-        //     AudioManagerCompat.requestAudioFocus(manager, focus!!)
-        // } else {
-        //     AudioManager.AUDIOFOCUS_REQUEST_FAILED
-        // }
+        focus = AudioFocusRequestCompat.Builder(AUDIOFOCUS_GAIN)
+            .setOnAudioFocusChangeListener(this)
+            .setAudioAttributes(
+                AudioAttributesCompat.Builder()
+                    .setUsage(USAGE_MEDIA)
+                    .setContentType(CONTENT_TYPE_MUSIC)
+                    .build()
+            )
+            .setWillPauseWhenDucked(playerOptions.alwaysPauseOnInterruption)
+            .build()
 
-        // hasAudioFocus = (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED)
+        val result: Int = if (manager != null && focus != null) {
+            AudioManagerCompat.requestAudioFocus(manager, focus!!)
+        } else {
+            AudioManager.AUDIOFOCUS_REQUEST_FAILED
+        }
+
+        hasAudioFocus = (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED)
     }
 
     private fun abandonAudioFocusIfHeld() {
-        // if (!hasAudioFocus) return
-        // Timber.d("Abandoning audio focus...")
+        // PACED BREATHING CHANGE (this is a no-op)!
+        return;
 
-        // val manager = ContextCompat.getSystemService(context, AudioManager::class.java)
+        if (!hasAudioFocus) return
+        Timber.d("Abandoning audio focus...")
 
-        // val result: Int = if (manager != null && focus != null) {
-        //     AudioManagerCompat.abandonAudioFocusRequest(manager, focus!!)
-        // } else {
-        //     AudioManager.AUDIOFOCUS_REQUEST_FAILED
-        // }
+        val manager = ContextCompat.getSystemService(context, AudioManager::class.java)
 
-        // hasAudioFocus = (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED)
+        val result: Int = if (manager != null && focus != null) {
+            AudioManagerCompat.abandonAudioFocusRequest(manager, focus!!)
+        } else {
+            AudioManager.AUDIOFOCUS_REQUEST_FAILED
+        }
+
+        hasAudioFocus = (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED)
     }
 
     override fun onAudioFocusChange(focusChange: Int) {
-        // Timber.d("Audio focus changed")
-        // val isPermanent = focusChange == AUDIOFOCUS_LOSS
-        // val isPaused = when (focusChange) {
-        //     AUDIOFOCUS_LOSS, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> true
-        //     AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> playerOptions.alwaysPauseOnInterruption
-        //     else -> false
-        // }
-        // if (!playerConfig.handleAudioFocus) {
-        //     if (isPermanent) abandonAudioFocusIfHeld()
+        // PACED BREATHING CHANGE (this is a no-op)!
+        return;
 
-        //     val isDucking = focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK
-        //             && !playerOptions.alwaysPauseOnInterruption
-        //     if (isDucking) {
-        //         volumeMultiplier = 0.5f
-        //         wasDucking = true
-        //     } else if (wasDucking) {
-        //         volumeMultiplier = 1f
-        //         wasDucking = false
-        //     }
-        // }
+        Timber.d("Audio focus changed")
+        val isPermanent = focusChange == AUDIOFOCUS_LOSS
+        val isPaused = when (focusChange) {
+            AUDIOFOCUS_LOSS, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> true
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> playerOptions.alwaysPauseOnInterruption
+            else -> false
+        }
+        if (!playerConfig.handleAudioFocus) {
+            if (isPermanent) abandonAudioFocusIfHeld()
 
-        // playerEventHolder.updateOnAudioFocusChanged(isPaused, isPermanent)
+            val isDucking = focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK
+                    && !playerOptions.alwaysPauseOnInterruption
+            if (isDucking) {
+                volumeMultiplier = 0.5f
+                wasDucking = true
+            } else if (wasDucking) {
+                volumeMultiplier = 1f
+                wasDucking = false
+            }
+        }
+
+        playerEventHolder.updateOnAudioFocusChanged(isPaused, isPermanent)
     }
 
     companion object {
