@@ -102,17 +102,17 @@ abstract class BaseAudioPlayer internal constructor(
         private set(value) {
             if (value != field) {
                 // Log the value
-                Timber.d("Player state changed to $value")
+                Timber.d("TEST4 - Player state changed to $value")
                 field = value
-                // playerEventHolder.updateAudioPlayerState(value)
-                // if (!playerConfig.handleAudioFocus) {
-                    // when (value) {
-                        // AudioPlayerState.IDLE,
-                        // AudioPlayerState.ERROR -> abandonAudioFocusIfHeld()
-                        // AudioPlayerState.READY -> requestAudioFocus()
-                        // else -> {}
-                    // }
-                // }
+                playerEventHolder.updateAudioPlayerState(value)
+                if (!playerConfig.handleAudioFocus) {
+                    when (value) {
+                        AudioPlayerState.IDLE,
+                        AudioPlayerState.ERROR -> abandonAudioFocusIfHeld()
+                        AudioPlayerState.READY -> requestAudioFocus()
+                        else -> {}
+                    }
+                }
             }
         }
 
@@ -525,69 +525,69 @@ abstract class BaseAudioPlayer internal constructor(
     }
 
     private fun requestAudioFocus() {
-        if (hasAudioFocus) return
-        Timber.d("Requesting audio focus...")
+        // if (hasAudioFocus) return
+        // Timber.d("Requesting audio focus...")
 
-        val manager = ContextCompat.getSystemService(context, AudioManager::class.java)
+        // val manager = ContextCompat.getSystemService(context, AudioManager::class.java)
 
-        focus = AudioFocusRequestCompat.Builder(AUDIOFOCUS_GAIN)
-            .setOnAudioFocusChangeListener(this)
-            .setAudioAttributes(
-                AudioAttributesCompat.Builder()
-                    .setUsage(USAGE_MEDIA)
-                    .setContentType(CONTENT_TYPE_MUSIC)
-                    .build()
-            )
-            .setWillPauseWhenDucked(playerOptions.alwaysPauseOnInterruption)
-            .build()
+        // focus = AudioFocusRequestCompat.Builder(AUDIOFOCUS_GAIN)
+        //     .setOnAudioFocusChangeListener(this)
+        //     .setAudioAttributes(
+        //         AudioAttributesCompat.Builder()
+        //             .setUsage(USAGE_MEDIA)
+        //             .setContentType(CONTENT_TYPE_MUSIC)
+        //             .build()
+        //     )
+        //     .setWillPauseWhenDucked(playerOptions.alwaysPauseOnInterruption)
+        //     .build()
 
-        val result: Int = if (manager != null && focus != null) {
-            AudioManagerCompat.requestAudioFocus(manager, focus!!)
-        } else {
-            AudioManager.AUDIOFOCUS_REQUEST_FAILED
-        }
+        // val result: Int = if (manager != null && focus != null) {
+        //     AudioManagerCompat.requestAudioFocus(manager, focus!!)
+        // } else {
+        //     AudioManager.AUDIOFOCUS_REQUEST_FAILED
+        // }
 
-        hasAudioFocus = (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED)
+        // hasAudioFocus = (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED)
     }
 
     private fun abandonAudioFocusIfHeld() {
-        if (!hasAudioFocus) return
-        Timber.d("Abandoning audio focus...")
+        // if (!hasAudioFocus) return
+        // Timber.d("Abandoning audio focus...")
 
-        val manager = ContextCompat.getSystemService(context, AudioManager::class.java)
+        // val manager = ContextCompat.getSystemService(context, AudioManager::class.java)
 
-        val result: Int = if (manager != null && focus != null) {
-            AudioManagerCompat.abandonAudioFocusRequest(manager, focus!!)
-        } else {
-            AudioManager.AUDIOFOCUS_REQUEST_FAILED
-        }
+        // val result: Int = if (manager != null && focus != null) {
+        //     AudioManagerCompat.abandonAudioFocusRequest(manager, focus!!)
+        // } else {
+        //     AudioManager.AUDIOFOCUS_REQUEST_FAILED
+        // }
 
-        hasAudioFocus = (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED)
+        // hasAudioFocus = (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED)
     }
 
     override fun onAudioFocusChange(focusChange: Int) {
-        Timber.d("Audio focus changed")
-        val isPermanent = focusChange == AUDIOFOCUS_LOSS
-        val isPaused = when (focusChange) {
-            AUDIOFOCUS_LOSS, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> true
-            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> playerOptions.alwaysPauseOnInterruption
-            else -> false
-        }
-        if (!playerConfig.handleAudioFocus) {
-            if (isPermanent) abandonAudioFocusIfHeld()
+        // Timber.d("Audio focus changed")
+        // val isPermanent = focusChange == AUDIOFOCUS_LOSS
+        // val isPaused = when (focusChange) {
+        //     AUDIOFOCUS_LOSS, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> true
+        //     AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> playerOptions.alwaysPauseOnInterruption
+        //     else -> false
+        // }
+        // if (!playerConfig.handleAudioFocus) {
+        //     if (isPermanent) abandonAudioFocusIfHeld()
 
-            val isDucking = focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK
-                    && !playerOptions.alwaysPauseOnInterruption
-            if (isDucking) {
-                volumeMultiplier = 0.5f
-                wasDucking = true
-            } else if (wasDucking) {
-                volumeMultiplier = 1f
-                wasDucking = false
-            }
-        }
+        //     val isDucking = focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK
+        //             && !playerOptions.alwaysPauseOnInterruption
+        //     if (isDucking) {
+        //         volumeMultiplier = 0.5f
+        //         wasDucking = true
+        //     } else if (wasDucking) {
+        //         volumeMultiplier = 1f
+        //         wasDucking = false
+        //     }
+        // }
 
-        playerEventHolder.updateOnAudioFocusChanged(isPaused, isPermanent)
+        // playerEventHolder.updateOnAudioFocusChanged(isPaused, isPermanent)
     }
 
     companion object {
