@@ -105,14 +105,14 @@ abstract class BaseAudioPlayer internal constructor(
                 Timber.d("TEST5 - Player state changed to $value")
                 field = value
                 playerEventHolder.updateAudioPlayerState(value)
-                if (!playerConfig.handleAudioFocus) {
-                    when (value) {
-                        AudioPlayerState.IDLE,
-                        AudioPlayerState.ERROR -> abandonAudioFocusIfHeld()
-                        AudioPlayerState.READY -> requestAudioFocus()
-                        else -> {}
-                    }
-                }
+                // if (!playerConfig.handleAudioFocus) {
+                //     when (value) {
+                //         AudioPlayerState.IDLE,
+                //         AudioPlayerState.ERROR -> abandonAudioFocusIfHeld()
+                //         AudioPlayerState.READY -> requestAudioFocus()
+                //         else -> {}
+                //     }
+                // }
             }
         }
 
@@ -258,7 +258,7 @@ abstract class BaseAudioPlayer internal constructor(
                     }
                 )
                 .build();
-            exoPlayer.setAudioAttributes(audioAttributes, playerConfig.handleAudioFocus);
+            exoPlayer.setAudioAttributes(audioAttributes, false) //playerConfig.handleAudioFocus);
             mediaSessionConnector.setPlayer(playerToUse)
             mediaSessionConnector.setMediaMetadataProvider {
                 notificationManager.getMediaMetadataCompat()
