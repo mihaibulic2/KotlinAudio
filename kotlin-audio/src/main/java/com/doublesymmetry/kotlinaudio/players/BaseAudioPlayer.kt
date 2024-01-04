@@ -107,7 +107,7 @@ abstract class BaseAudioPlayer internal constructor(
                     when (value) {
                         AudioPlayerState.IDLE,
                         AudioPlayerState.ERROR -> abandonAudioFocusIfHeld()
-                        AudioPlayerState.READY -> requestAudioFocus()
+//                        AudioPlayerState.READY -> requestAudioFocus()
                         else -> {}
                     }
                 }
