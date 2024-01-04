@@ -84,6 +84,7 @@ import java.util.concurrent.TimeUnit
 // - NOTE: before handleAudioFocus determined if exoPlayer handles audioFocus or if BaseAudioPlayer does,
 //   ie it's still handled by someone. Ideally this would have a 3rd state for "ignore focus entirely"
 //   but it's just easier for us to always do that.
+// —— See 'AUDIO FOCUS NOTE' comment at the top of SoundController in Paced Breathing repo for more info
 
 abstract class BaseAudioPlayer internal constructor(
     internal val context: Context,
